@@ -24,10 +24,50 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Device.init({
-    userId: DataTypes.INTEGER,
-    deviceName: DataTypes.STRING,
-    deviceType: DataTypes.STRING,
-    isActive: DataTypes.BOOLEAN
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id'
+      }
+    },
+    deviceName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'deviceName'
+    },
+    deviceType: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'deviceType'
+    },
+    platform: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'platform'
+    },
+    version: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'version'
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      field: 'isActive'
+    },
+    lastConnectedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      field: 'lastConnectedAt'
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      defaultValue: {},
+      field: 'metadata'
+    }
   }, {
     sequelize,
     modelName: 'Device',

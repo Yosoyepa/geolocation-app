@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 
 // Load environment variables from the root directory
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
@@ -9,14 +11,17 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 // Import middleware
 const { errorHandler, notFound } = require('./middlewares/errorHandler');
 const { generalLimiter } = require('./middlewares/rateLimiter');
+const { initializeSocket, attachSocketIO } = require('./middlewares/socketAuth');
 
 // Import routes
 const authRoutes = require('./api/authRoutes');
+const locationRoutes = require('./api/locationRoutes');
 
 // Import database
 const db = require('./models');
 
 const app = express();
+const server = createServer(app);
 
 // Security middleware
 app.use(helmet({
@@ -68,6 +73,19 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// Initialize Socket.IO
+const io = new Server(server, {
+  cors: corsOptions,
+  transports: ['websocket', 'polling'],
+  allowEIO3: true
+});
+
+// Initialize Socket.IO with authentication
+initializeSocket(io);
+
+// Middleware to attach Socket.IO to requests
+app.use(attachSocketIO(io));
+
 // Rate limiting
 app.use(generalLimiter);
 
@@ -95,6 +113,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api', locationRoutes);
 
 // 404 handler
 app.use(notFound);
@@ -112,10 +131,11 @@ async function startServer() {
     console.log('✅ Database connection established successfully');
 
     // Start server
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+      console.log(`🔌 Socket.IO enabled for real-time communication`);
     });
   } catch (error) {
     console.error('❌ Unable to start server:', error);
