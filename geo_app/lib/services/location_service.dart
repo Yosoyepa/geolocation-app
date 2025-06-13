@@ -5,7 +5,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'auth_service.dart';
 
 class LocationService {
-  static const String baseUrl = 'http://localhost:3000/api';
+  static const String baseUrl = 'http://10.0.2.2:3001/api';
   final AuthService _authService = AuthService();
   IO.Socket? _socket;
 
