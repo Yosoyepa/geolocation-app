@@ -138,25 +138,40 @@ TAREA 3.2: INTEGRACIÓN DE TIEMPO REAL CON SOCKET.IO
     3.  Modifica la lógica del endpoint `POST /api/locations`. Después de guardar exitosamente una nueva ubicación en la base de datos, emite un evento `new-location` a una sala específica del usuario (ej., `user:${userId}`). El payload del evento debe ser la nueva ubicación.
 
 ======================================================================
-FASE 4: DESARROLLO DE LA APLICACIÓN MÓVIL
+FASE 4: DESARROLLO DE LA APLICACIÓN MÓVIL (FLUTTER)
 ======================================================================
-OBJETIVO: Crear el cliente móvil que captura y envía la ubicación del GPS y la visualiza en un mapa.
+OBJETIVO: Crear el cliente móvil en Flutter que capture y envíe la ubicación GPS y la visualice en un mapa.
 
 ---
-TAREA 4.1: CONFIGURACIÓN E INTERFAZ DE AUTENTICACIÓN
-* ACCIÓN:
-    1.  En el directorio `/mobile-app`, inicializa un proyecto de React Native.
-    2.  Instala las dependencias: `axios`, `@react-navigation/native`, `react-native-maps`, `@react-native-community/geolocation`, `@react-native-async-storage/async-storage`, `socket.io-client`.
-    3.  Crea las pantallas `LoginScreen` y `RegisterScreen`. Implementa los formularios y las llamadas a la API del backend usando `axios`. Al obtener un token JWT, guárdalo de forma segura con `@react-native-async-storage/async-storage`.
+TAREA 4.1: CONFIGURACIÓN DEL PROYECTO FLUTTER  
+* ACCIÓN:  
+  1. Abre el directorio [geo_app](geo_app/README.md), ya inicializado por Flutter.  
+  2. Añade en [geo_app/pubspec.yaml](geo_app/pubspec.yaml) las dependencias:
+     ```yaml
+     dependencies:
+       flutter:
+         sdk: flutter
+       geolocator: ^9.0.2
+       google_maps_flutter: ^2.2.5
+       socket_io_client: ^2.0.0
+     ```
+  3. Ejecuta en la terminal de geo_app `flutter pub get`.
 
 ---
-TAREA 4.2: IMPLEMENTACIÓN DE TRACKING Y VISUALIZACIÓN EN MAPA
-* ACCIÓN:
-    1.  Crea la pantalla `MapDashboardScreen`. Al cargar, solicita los permisos de geolocalización al usuario.
-    2.  Usa `Geolocation.watchPosition()` para obtener actualizaciones de la ubicación del dispositivo.
-    3.  Por cada actualización de ubicación, envía las coordenadas al endpoint `POST /api/locations` del backend, adjuntando el token JWT guardado en los encabezados.
-    4.  Integra el componente `<MapView>` de `react-native-maps`. Muestra la ubicación actual con un `<Marker>`.
-    5.  Conéctate al servidor de Socket.IO del backend y escucha el evento `new-location` para actualizar la posición del marcador en tiempo real.
+TAREA 4.2: PANTALLAS DE AUTENTICACIÓN  
+* ACCIÓN:  
+  1. Crea la carpeta `lib/screens` en [lib](http://_vscodecontentref_/0).  
+  2. Implementa `login_screen.dart` y `register_screen.dart` usando `TextField`, `ElevatedButton` y validaciones con `http`.  
+  3. Configura las rutas en [main.dart](http://_vscodecontentref_/1) con `Navigator`.
+
+---
+TAREA 4.3: TRACKING Y VISUALIZACIÓN EN MAPA  
+* ACCIÓN:  
+  1. Solicita permisos de ubicación con [`geolocator`](https://pub.dev/packages/geolocator) en el método `initState` de `MapDashboardScreen`.  
+  2. Usa `Geolocator.getPositionStream()` para recibir actualizaciones continuas.  
+  3. Envía cada nueva ubicación al endpoint `POST /api/locations` del backend con `socket_io_client` y/o `http`.  
+  4. Integra [`GoogleMap`](https://pub.dev/packages/google_maps_flutter) en `MapDashboardScreen` para mostrar el mapa y un `Marker` con la posición actual.  
+  5. Conéctate al servidor Socket.IO con `IO.socket(...)` y escucha el evento `new-location` para actualizar la posición en tiempo real.
 
 ======================================================================
 FASE 5: DOCUMENTACIÓN Y CIERRE
