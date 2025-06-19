@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA en la Educación: Un Análisis Interactivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Energetic & Playful -->
+    <!-- Application Structure Plan: The application is designed as a single-page interactive journey with a sticky top navigation bar (Plataformas, Pedagogía, Ética, Futuro) to allow non-linear exploration of the report's core themes. This structure was chosen over a linear format to make the dense information more digestible and to empower users to focus on topics of interest. Each section uses a combination of responsive grids, cards, and interactive elements to present key findings, data, and text snippets in a visually engaging way, prioritizing scannability and user understanding. -->
+    <!-- Visualization & Content Choices:
+- Report Info: Platform Comparison (Table 1 data) -> Goal: Compare -> Viz/Method: Interactive cards and a comparative horizontal Bar Chart (Chart.js) to show different pedagogical focuses. -> Interaction: Hover to see details on charts. -> Justification: More dynamic and digestible than a large static table.
+- Report Info: Pedagogical shift (Alpha School model) -> Goal: Inform (Proportion) -> Viz/Method: Donut Chart (Chart.js). -> Interaction: Hover for tooltips. -> Justification: Clearly visualizes the time split between academics and life skills.
+- Report Info: Ethical stances (Table 2 concepts) -> Goal: Compare -> Viz/Method: Radar Chart (Chart.js) to compare platforms on ethical dimensions like privacy and data usage. -> Interaction: Hover to see platform scores. -> Justification: A radar chart is ideal for comparing multiple entities across multiple variables simultaneously.
+- Report Info: Abstract concepts (Socratic method, role of the teacher, equity) -> Goal: Organize/Explain -> Viz/Method: Custom diagrams built with structured HTML and Tailwind CSS (flexbox, grid, borders). -> Interaction: Static visual aids. -> Justification: Avoids chart overhead for conceptual flows, providing clear, custom-styled visual explanations.
+- Report Info: Stakeholder Recommendations -> Goal: Organize -> Viz/Method: Interactive tabbed interface (HTML/CSS/JS). -> Interaction: Click to switch views. -> Justification: Presents a large amount of targeted text in a compact, user-controlled manner.
+-->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link.active {
+            color: #00A9E0;
+            border-bottom-color: #00A9E0;
+        }
+        .tab.active {
+            background-color: #00A9E0;
+            color: white;
+        }
+        .flow-arrow::after {
+            content: '→';
+            font-size: 2.5rem;
+            color: #cbd5e1;
+            margin: 0 1rem;
+        }
+        @media (max-width: 768px) {
+            .flow-arrow::after {
+                content: '↓';
+                display: block;
+                margin: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+
+    <header class="sticky top-0 bg-white/80 backdrop-blur-lg shadow-sm z-50">
+        <nav class="container mx-auto px-4">
+            <ul id="nav-menu" class="flex items-center justify-center space-x-4 sm:space-x-8 py-4 text-sm sm:text-base font-semibold">
+                <li><a href="#intro" class="nav-link border-b-2 border-transparent pb-1">Inicio</a></li>
+                <li><a href="#plataformas" class="nav-link border-b-2 border-transparent pb-1">Plataformas</a></li>
+                <li><a href="#pedagogia" class="nav-link border-b-2 border-transparent pb-1">Pedagogía</a></li>
+                <li><a href="#etica" class="nav-link border-b-2 border-transparent pb-1">Ética</a></li>
+                <li><a href="#futuro" class="nav-link border-b-2 border-transparent pb-1">Futuro</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="intro" class="py-16 sm:py-24 text-center bg-slate-50">
+            <div class="container mx-auto px-4">
+                <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-4">El Potencial de la IA en la Educación</h1>
+                <p class="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto">Un análisis interactivo sobre las plataformas, pedagogías y dilemas éticos que están redefiniendo el aprendizaje infantil.</p>
+            </div>
+        </section>
+
+        <section id="plataformas" class="py-16 sm:py-20 scroll-mt-20">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800">Un Ecosistema en Expansión</h2>
+                    <p class="mt-2 text-lg text-slate-500 max-w-2xl mx-auto">La IA se manifiesta en un espectro de soluciones: desde herramientas que enriquecen, hasta ecosistemas que reinventan la escuela.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+                    <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-[#00A9E0]">
+                        <h3 class="font-bold text-xl text-slate-800">Synthesis Tutor</h3>
+                        <p class="text-sm mt-2 text-slate-600">Tutor adaptativo y gamificado para construir una comprensión matemática profunda en niños de 5-11 años.</p>
+                        <div class="mt-4 pt-4 border-t">
+                            <p class="text-xs font-semibold text-slate-400">MODELO</p>
+                            <p class="font-bold text-[#00A9E0]">TUTOR</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-[#F7A823]">
+                        <h3 class="font-bold text-xl text-slate-800">Snorkl</h3>
+                        <p class="text-sm mt-2 text-slate-600">Herramienta multimodal (voz, dibujo, texto) para hacer visible el pensamiento del estudiante con feedback de IA.</p>
+                        <div class="mt-4 pt-4 border-t">
+                            <p class="text-xs font-semibold text-slate-400">MODELO</p>
+                            <p class="font-bold text-[#F7A823]">HERRAMIENTA</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-[#662D8C]">
+                        <h3 class="font-bold text-xl text-slate-800">Alpha High School</h3>
+                        <p class="text-sm mt-2 text-slate-600">Ecosistema completo que usa IA para acelerar el aprendizaje académico y liberar tiempo para "habilidades para la vida".</p>
+                        <div class="mt-4 pt-4 border-t">
+                            <p class="text-xs font-semibold text-slate-400">MODELO</p>
+                            <p class="font-bold text-[#662D8C]">ECOSISTEMA</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-[#3AAA35]">
+                        <h3 class="font-bold text-xl text-slate-800">Khanmigo</h3>
+                        <p class="text-sm mt-2 text-slate-600">Tutor socrático que guía al estudiante hacia las respuestas, integrado en la vasta biblioteca de Khan Academy.</p>
+                        <div class="mt-4 pt-4 border-t">
+                             <p class="text-xs font-semibold text-slate-400">MODELO</p>
+                            <p class="font-bold text-[#3AAA35]">TUTOR SOCRÁTICO</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="pedagogia" class="py-16 sm:py-20 bg-slate-50 scroll-mt-20">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800">Reinventando la Pedagogía</h2>
+                    <p class="mt-2 text-lg text-slate-500 max-w-2xl mx-auto">La IA no es solo una herramienta, es un catalizador que cambia cómo se enseña y se aprende.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="font-bold text-xl text-center mb-4">El Renacimiento del Método Socrático</h3>
+                        <p class="text-sm text-center text-slate-600 mb-6">En lugar de dar respuestas, plataformas como Khanmigo guían con preguntas, fomentando el pensamiento crítico.</p>
+                        <div class="space-y-3 text-sm">
+                            <div class="p-3 bg-slate-100 rounded-lg">Estudiante: "¿Cuál es el área de un rectángulo de 5x4?"</div>
+                            <div class="p-3 bg-blue-100 rounded-lg ml-auto max-w-[80%]">IA Socrática: "¡Buena pregunta! ¿Recuerdas la fórmula para el área de un rectángulo?"</div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="font-bold text-xl text-center mb-4">Aprendizaje Acelerado</h3>
+                        <p class="text-sm text-center text-slate-600 mb-6">El modelo de Alpha School usa IA para dominar lo académico en menos tiempo, dedicando el resto del día a habilidades humanas.</p>
+                        <div class="chart-container h-64 sm:h-auto">
+                            <canvas id="alphaChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+                        <h3 class="font-bold text-xl text-center mb-4">De la Secuenciación Adaptativa al Contenido Generativo</h3>
+                        <p class="text-sm text-center text-slate-600 mb-8">La personalización del aprendizaje evoluciona desde ajustar el ritmo hasta crear material educativo único para cada estudiante.</p>
+                        <div class="flex flex-col md:flex-row justify-between items-center text-center text-sm md:text-base">
+                             <div class="flex-1">
+                                <div class="p-4 bg-slate-100 rounded-lg">
+                                    <h4 class="font-bold">Adaptación</h4>
+                                    <p>Ajusta el ritmo y la secuencia del material pre-diseñado.</p>
+                                </div>
+                            </div>
+                            <div class="flow-arrow"></div>
+                            <div class="flex-1">
+                                <div class="p-4 bg-slate-100 rounded-lg">
+                                    <h4 class="font-bold">Feedback Generativo</h4>
+                                    <p>Crea comentarios personalizados en tiempo real.</p>
+                                </div>
+                            </div>
+                            <div class="flow-arrow"></div>
+                            <div class="flex-1">
+                                <div class="p-4 bg-slate-100 rounded-lg">
+                                    <h4 class="font-bold">Contenido Generativo</h4>
+                                    <p>Genera material educativo nuevo y a medida.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="etica" class="py-16 sm:py-20 scroll-mt-20">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800">La Cuerda Floja Ética</h2>
+                    <p class="mt-2 text-lg text-slate-500 max-w-2xl mx-auto">El inmenso potencial de la IA conlleva serios riesgos en privacidad, sesgo algorítmico y equidad.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div class="lg:col-span-3 bg-white rounded-lg shadow-md p-6">
+                        <h3 class="font-bold text-xl text-center mb-4">Análisis Comparativo de Postura Ética</h3>
+                        <p class="text-sm text-center text-slate-600 mb-4">Las plataformas varían en su enfoque sobre la privacidad y el uso de datos. Los modelos sin ánimo de lucro y con despersonalización ofrecen mayores garantías.</p>
+                        <div class="chart-container">
+                            <canvas id="ethicsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+                        <h3 class="font-bold text-xl text-center mb-4">El Currículo Oculto del Sesgo</h3>
+                         <p class="text-sm text-center text-slate-600 mb-6">Los algoritmos pueden amplificar sesgos sociales, creando una "línea roja digital" que limita oportunidades.</p>
+                         <div class="space-y-4">
+                             <div class="flex items-start space-x-3 p-3 bg-red-50 rounded-lg">
+                                 <span class="text-xl">🗣️</span>
+                                 <div>
+                                     <h4 class="font-bold text-sm">Lingüístico y Racial</h4>
+                                     <p class="text-xs">Detectores de IA pueden marcar falsamente a hablantes no nativos.</p>
+                                 </div>
+                             </div>
+                             <div class="flex items-start space-x-3 p-3 bg-red-50 rounded-lg">
+                                 <span class="text-xl">💰</span>
+                                 <div>
+                                     <h4 class="font-bold text-sm">Socioeconómico</h4>
+                                     <p class="text-xs">Un sistema puede asignar tareas más fáciles a estudiantes de bajos ingresos.</p>
+                                 </div>
+                             </div>
+                             <div class="flex items-start space-x-3 p-3 bg-red-50 rounded-lg">
+                                 <span class="text-xl">♿</span>
+                                 <div>
+                                     <h4 class="font-bold text-sm">Contra la Discapacidad</h4>
+                                     <p class="text-xs">La IA puede no evaluar bien perfiles de aprendizaje diversos.</p>
+                                 </div>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="futuro" class="py-16 sm:py-20 bg-slate-50 scroll-mt-20">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800">Navegando el Futuro</h2>
+                    <p class="mt-2 text-lg text-slate-500 max-w-2xl mx-auto">La IA no reemplaza al profesor, sino que redefine su rol y exige nuevas competencias para todos.</p>
+                </div>
+
+                 <div class="mb-16">
+                    <h3 class="text-2xl font-bold text-slate-800 text-center mb-8">La Evolución del Educador</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-center space-y-8 md:space-y-0 text-center">
+                        <div class="w-64">
+                            <div class="p-6 bg-white rounded-lg shadow-md">
+                                <div class="text-5xl mb-4">👨‍🏫</div>
+                                <h4 class="font-bold text-lg">Sabio en el Estrado</h4>
+                                <p class="text-sm text-slate-600">Fuente principal de conocimiento y transmisor de información.</p>
+                            </div>
+                        </div>
+                        <div class="text-5xl text-slate-300 font-bold transform rotate-90 md:rotate-0 mx-8">→</div>
+                        <div class="w-64">
+                             <div class="p-6 bg-white rounded-lg shadow-md border-2 border-[#00A9E0]">
+                                <div class="text-5xl mb-4">🧑‍🎨</div>
+                                <h4 class="font-bold text-lg">Arquitecto del Aprendizaje</h4>
+                                <p class="text-sm text-slate-600">Facilitador, mentor y curador de experiencias de aprendizaje.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                     <h3 class="text-2xl font-bold text-slate-800 text-center mb-8">Recomendaciones Estratégicas</h3>
+                     <div class="max-w-4xl mx-auto">
+                        <div class="flex justify-center border-b mb-6">
+                            <button data-tab="admins" class="tab px-4 py-2 font-semibold text-slate-500 transition active">Administradores</button>
+                            <button data-tab="educators" class="tab px-4 py-2 font-semibold text-slate-500 transition">Educadores</button>
+                            <button data-tab="parents" class="tab px-4 py-2 font-semibold text-slate-500 transition">Padres</button>
+                        </div>
+                        <div id="tab-content" class="bg-white rounded-lg shadow-md p-8 min-h-[200px]">
+                            <div class="tab-pane active" id="admins-content">
+                                <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                    <li>Priorizar la diligencia debida ética antes de adoptar cualquier herramienta.</li>
+                                    <li>Exigir transparencia sobre los algoritmos y datos de entrenamiento.</li>
+                                    <li>Invertir en desarrollo profesional continuo para los docentes.</li>
+                                    <li>Establecer políticas claras sobre el uso aceptable de la IA.</li>
+                                </ul>
+                            </div>
+                            <div class="tab-pane hidden" id="educators-content">
+                                 <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                    <li>Adoptar el rol de facilitador y arquitecto de experiencias.</li>
+                                    <li>Modelar el uso crítico y ético de la IA en el aula.</li>
+                                    <li>Rediseñar la evaluación para centrarse en el pensamiento crítico.</li>
+                                    <li>Enseñar explícitamente la alfabetización en IA.</li>
+                                </ul>
+                            </div>
+                            <div class="tab-pane hidden" id="parents-content">
+                                 <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                    <li>Mantenerse informado sobre las herramientas usadas en la escuela.</li>
+                                    <li>Fomentar el diálogo en casa sobre el uso responsable de la IA.</li>
+                                    <li>Apoyar el proceso de pensamiento, no solo la obtención de respuestas.</li>
+                                    <li>Preguntar sobre las políticas de privacidad de datos.</li>
+                                </ul>
+                            </div>
+                        </div>
+                     </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center py-8 bg-slate-800 text-slate-400 mt-16">
+        <p>Análisis interactivo basado en el informe "El Potencial de la IA en la Educación Infantil".</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const wrapLabels = (label, maxLength) => {
+                if (typeof label !== 'string' || label.length <= maxLength) {
+                    return label;
+                }
+                const words = label.split(' ');
+                let lines = [];
+                let currentLine = '';
+                for (const word of words) {
+                    if ((currentLine + ' ' + word).length > maxLength && currentLine.length > 0) {
+                        lines.push(currentLine);
+                        currentLine = word;
+                    } else {
+                        currentLine += (currentLine.length === 0 ? '' : ' ') + word;
+                    }
+                }
+                lines.push(currentLine);
+                return lines;
+            };
+
+            const TOOLTIP_CONFIG = {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const item = tooltipItems[0];
+                                let label = item.chart.data.labels[item.dataIndex];
+                                return Array.isArray(label) ? label.join(' ') : label;
+                            }
+                        }
+                    }
+                }
+            };
+            
+            const COLORS = {
+                blue: '#00A9E0',
+                orange: '#F7A823',
+                green: '#3AAA35',
+                red: '#E6332A',
+                purple: '#662D8C',
+                slate: '#94a3b8'
+            };
+
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.color = '#475569';
+
+            const alphaCtx = document.getElementById('alphaChart');
+            if (alphaCtx) {
+                new Chart(alphaCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Aprendizaje Académico con IA', 'Talleres de Habilidades para la Vida'],
+                        datasets: [{
+                            data: [25, 75],
+                            backgroundColor: [COLORS.orange, COLORS.blue],
+                            borderColor: '#ffffff',
+                            borderWidth: 4,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            ...TOOLTIP_CONFIG.plugins,
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 20
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const ethicsCtx = document.getElementById('ethicsChart');
+            if (ethicsCtx) {
+                const labels = [
+                    'Protección de Privacidad', 
+                    'Despersonalización de Datos', 
+                    'Uso Comercial (Inverso)', 
+                    'Transparencia'
+                ];
+                new Chart(ethicsCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: labels.map(l => wrapLabels(l, 12)),
+                        datasets: [{
+                            label: 'Khan Academy / Snorkl',
+                            data: [5, 4.5, 5, 4.5],
+                            fill: true,
+                            backgroundColor: 'rgba(0, 169, 224, 0.2)',
+                            borderColor: COLORS.blue,
+                            pointBackgroundColor: COLORS.blue,
+                        }, {
+                            label: 'Synthesis / Alpha',
+                            data: [3, 2, 2, 3],
+                            fill: true,
+                            backgroundColor: 'rgba(247, 168, 35, 0.2)',
+                            borderColor: COLORS.orange,
+                            pointBackgroundColor: COLORS.orange,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            ...TOOLTIP_CONFIG.plugins,
+                             legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 20
+                                }
+                            }
+                        },
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 5,
+                                pointLabels: {
+                                    font: { size: 10 }
+                                },
+                                grid: { color: '#e2e8f0' },
+                                angleLines: { color: '#e2e8f0' }
+                            }
+                        },
+                    }
+                });
+            }
+            
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetId = tab.dataset.tab;
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    document.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.classList.add('hidden');
+                    });
+                    
+                    document.getElementById(`${targetId}-content`).classList.remove('hidden');
+                });
+            });
+
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                        });
+                    }
+                });
+            }, { rootMargin: '-50% 0px -50% 0px' });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+             document.getElementById('nav-menu').addEventListener('click', function(e) {
+                if(e.target.tagName === 'A') {
+                    e.preventDefault();
+                    const targetId = e.target.getAttribute('href');
+                    document.querySelector(targetId).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>
