@@ -6,9 +6,10 @@ const { asyncHandler } = require('../middlewares/errorHandler');
  * POST /api/auth/register
  */
 const register = asyncHandler(async (req, res) => {
-  const { email, password, firstName, lastName } = req.body;
+  const { email, password, firstName, lastName, username } = req.body;
 
   const result = await authService.register({
+    username,
     email,
     password,
     firstName,
