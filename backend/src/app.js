@@ -54,7 +54,11 @@ const corsOptions = {
       'http://localhost:8081',
       // Add your React Native development URLs
       'exp://192.168.1.100:19000', // Expo development
-      'http://192.168.1.100:19006' // Expo web
+      'http://192.168.1.100:19006', // Expo web
+      // Flutter development origins
+      'http://10.0.2.2:3000', // Android emulator
+      'http://localhost:3000', // iOS simulator and local development
+      'http://127.0.0.1:3000' // Alternative localhost for Flutter
     ];
     
     if (process.env.NODE_ENV === 'development') {
@@ -74,8 +78,12 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Initialize Socket.IO
+const socketCorsOptions = process.env.NODE_ENV === 'development' 
+  ? { ...corsOptions, origin: '*' }
+  : corsOptions;
+
 const io = new Server(server, {
-  cors: corsOptions,
+  cors: socketCorsOptions,
   transports: ['websocket', 'polling'],
   allowEIO3: true
 });
