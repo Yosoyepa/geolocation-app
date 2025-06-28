@@ -37,6 +37,7 @@ class AuthService {
     // Return user without password
     const userResponse = {
       id: user.id,
+      username: user.username,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -81,6 +82,7 @@ class AuthService {
     // Return user without password
     const userResponse = {
       id: user.id,
+      username: user.username,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
