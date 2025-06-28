@@ -8,15 +8,23 @@ class AuthService {
   static const String socketUrl = 'http://10.0.2.2:3000';
 
   Future<Map<String, dynamic>> register(
+    String username,
+    String firstName,
+    String lastName,
     String email,
     String password,
-    String name,
   ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/register'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password, 'name': name}),
+        body: jsonEncode({
+          'username': username,
+          'firstName': firstName,
+          'lastName': lastName,
+          'email': email,
+          'password': password,
+        }),
       );
 
       return jsonDecode(response.body);
@@ -33,14 +41,17 @@ class AuthService {
         body: jsonEncode({'email': email, 'password': password}),
       );
 
-      final data = jsonDecode(response.body);
+      final responseData = jsonDecode(response.body);
 
-      if (response.statusCode == 200 && data['token'] != null) {
-        await _saveToken(data['token']);
-        await _saveUser(User.fromJson(data['user']));
+      if (response.statusCode == 200 && responseData['success'] == true && responseData['data'] != null) {
+        final data = responseData['data'];
+        if (data['token'] != null && data['user'] != null) {
+          await _saveToken(data['token']);
+          await _saveUser(User.fromJson(data['user']));
+        }
       }
 
-      return data;
+      return responseData;
     } catch (e) {
       return {'error': 'Network error: $e'};
     }

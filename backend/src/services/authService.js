@@ -9,7 +9,7 @@ class AuthService {
    * @returns {Object} User object and token
    */
   async register(userData) {
-    const { email, password, firstName, lastName } = userData;
+    const { email, password, firstName, lastName, username } = userData;
 
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
@@ -23,6 +23,7 @@ class AuthService {
 
     // Create user
     const user = await User.create({
+      username,
       email,
       password: hashedPassword,
       firstName,
