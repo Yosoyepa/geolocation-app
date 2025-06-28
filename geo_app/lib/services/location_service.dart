@@ -5,7 +5,8 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'auth_service.dart';
 
 class LocationService {
-  static const String baseUrl = 'http://10.0.2.2:3001/api';
+  static const String baseUrl = 'http://10.0.2.2:3000/api';
+  static const String socketUrl = 'http://10.0.2.2:3000';
   final AuthService _authService = AuthService();
   IO.Socket? _socket;
 
@@ -81,7 +82,7 @@ class LocationService {
   void initializeSocket() {
     if (_socket != null) return;
 
-    _socket = IO.io('http://localhost:3000', <String, dynamic>{
+    _socket = IO.io(socketUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
     });
