@@ -82,11 +82,27 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
     }
   }
 
-  void _initializeSocket() {
-    _locationService.initializeSocket();
-    _locationService.listenToLocationUpdates((locationData) {
+  Future<void> _initializeSocket() async {
+    await _locationService.initializeSocket();
+    
+    // Listen to location updates from other devices/users
+    await _locationService.listenToLocationUpdates((locationData) {
       // Handle real-time location updates from other devices/users
       print('Received location update: $locationData');
+    });
+    
+    // Listen for location-update events
+    _locationService.onLocationUpdate((data) {
+      print('Location update event: $data');
+      // Handle location update event - could update markers on map
+      _handleLocationUpdate(data);
+    });
+    
+    // Listen for geofence events
+    _locationService.onGeofenceEvent((data) {
+      print('Geofence event: $data');
+      // Handle geofence event - could show notifications
+      _handleGeofenceEvent(data);
     });
   }
 
@@ -172,6 +188,55 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
         ],
       ),
     );
+  }
+
+  void _handleLocationUpdate(Map<String, dynamic> data) {
+    // Handle location updates from other users/devices
+    // This could be used to show other users' locations on the map
+    try {
+      final latitude = data['latitude']?.toDouble();
+      final longitude = data['longitude']?.toDouble();
+      final userId = data['userId'];
+      
+      if (latitude != null && longitude != null) {
+        setState(() {
+          // Add or update marker for other user's location
+          _markers.add(
+            Marker(
+              markerId: MarkerId('user_$userId'),
+              position: LatLng(latitude, longitude),
+              infoWindow: InfoWindow(title: 'User $userId'),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueRed,
+              ),
+            ),
+          );
+        });
+      }
+    } catch (e) {
+      print('Error handling location update: $e');
+    }
+  }
+  
+  void _handleGeofenceEvent(Map<String, dynamic> data) {
+    // Handle geofence events
+    try {
+      final eventType = data['type'];
+      final userId = data['userId'];
+      final geofenceName = data['geofenceName'];
+      
+      // Show notification or dialog for geofence events
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Geofence Event: $eventType for $geofenceName'),
+            backgroundColor: eventType == 'enter' ? Colors.green : Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error handling geofence event: $e');
+    }
   }
 
   Future<void> _logout() async {

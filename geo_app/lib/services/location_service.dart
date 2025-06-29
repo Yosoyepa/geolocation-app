@@ -159,30 +159,60 @@ class LocationService {
     }
   }
 
-  void initializeSocket() {
+  Future<void> initializeSocket() async {
     if (_socket != null) return;
+
+    // Get token and deviceId before connecting
+    final token = await _authService.getToken();
+    final deviceId = await getOrCreateDeviceId();
+    
+    if (token == null) {
+      print('No token available, cannot initialize socket');
+      return;
+    }
 
     _socket = IO.io(socketUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
+      'auth': {'token': token},
     });
 
-    _socket!.connect();
-
-    _socket!.on('connect', (_) {
+    _socket!.on('connect', (_) async {
       print('Connected to Socket.IO server');
+      
+      // Get current user and emit join event
+      final user = await _authService.getCurrentUser();
+      if (user != null) {
+        _socket!.emit('join', {'userId': user.id});
+        print('Joined user room: ${user.id}');
+      }
     });
 
     _socket!.on('disconnect', (_) {
       print('Disconnected from Socket.IO server');
     });
+
+    // Listen for location updates
+    _socket!.on('location-update', (data) {
+      print('Received location update: $data');
+      // Handle location update
+    });
+
+    // Listen for geofence events
+    _socket!.on('geofence-event', (data) {
+      print('Received geofence event: $data');
+      // Handle geofence event
+    });
+
+    // Connect after configuration
+    _socket!.connect();
   }
 
-  void listenToLocationUpdates(
+  Future<void> listenToLocationUpdates(
     Function(Map<String, dynamic>) onLocationUpdate,
-  ) {
+  ) async {
     if (_socket == null) {
-      initializeSocket();
+      await initializeSocket();
     }
 
     _socket!.on('new-location', (data) {
@@ -190,9 +220,24 @@ class LocationService {
     });
   }
 
+  // Add method to listen for location updates
+  void onLocationUpdate(Function(Map<String, dynamic>) callback) {
+    _socket?.on('location-update', (data) {
+      callback(Map<String, dynamic>.from(data));
+    });
+  }
+
+  // Add method to listen for geofence events
+  void onGeofenceEvent(Function(Map<String, dynamic>) callback) {
+    _socket?.on('geofence-event', (data) {
+      callback(Map<String, dynamic>.from(data));
+    });
+  }
+
   void joinUserRoom(int userId) {
     if (_socket != null) {
-      _socket!.emit('join', 'user:$userId');
+      _socket!.emit('join', {'userId': userId});
+      print('Manually joined user room: $userId');
     }
   }
 

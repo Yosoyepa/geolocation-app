@@ -18,7 +18,7 @@ const socketAuth = async (socket, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Find user in database
-    const user = await User.findByPk(decoded.id, {
+    const user = await User.findByPk(decoded.userId, {
       attributes: ['id', 'email', 'firstName', 'lastName', 'isActive']
     });
 
