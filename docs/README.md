@@ -96,7 +96,7 @@ This is a comprehensive geolocation tracking system built with a Node.js backend
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │                 │    │                 │    │                 │
 │  Mobile App     │◄──►│  Backend API    │◄──►│  PostgreSQL     │
-│  (React Native) │    │  (Node.js)      │    │  Database       │
+│  (Flutter)      │    │  (Node.js)      │    │  Database       │
 │                 │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
         │                       │
@@ -149,15 +149,15 @@ This is a comprehensive geolocation tracking system built with a Node.js backend
 - [x] Location accuracy tracking
 
 #### Mobile Application
-- [x] React Native project setup
-- [x] Navigation between screens
-- [x] Authentication context and state management
-- [x] Login and registration screens
-- [x] Map visualization with react-native-maps
-- [x] GPS location tracking
-- [x] Real-time location updates
-- [x] Device permission handling
-- [x] Secure token storage
+- [x] Flutter project setup with cross-platform support
+- [x] Navigation between screens with Flutter Navigator
+- [x] Authentication state management with Provider
+- [x] Login and registration screens with Material Design
+- [x] Map visualization with OpenStreetMap integration
+- [x] GPS location tracking with geolocator package
+- [x] Real-time location updates via Socket.IO client
+- [x] Location permission handling with permission_handler
+- [x] Secure token storage with flutter_secure_storage
 
 ### ⏳ Pending Features (Future Development)
 
@@ -215,28 +215,34 @@ This is a comprehensive geolocation tracking system built with a Node.js backend
 ### Mobile Development
 
 1. **Adding New Screens**
-   - Create screen component in `src/screens/`
-   - Add to navigation stack in `App.tsx`
-   - Update navigation types if using TypeScript
+   - Create screen widget in `lib/screens/`
+   - Add to navigation routes in `main.dart`
+   - Update routing configuration in MaterialApp
 
 2. **Testing on Devices**
    ```bash
+   # Check connected devices
+   flutter devices
+   
    # Android - ensure device is connected
    adb devices
-   npx react-native run-android
+   flutter run -d android
    
-   # iOS - use Xcode simulator
-   npx react-native run-ios
+   # iOS - use Xcode simulator (macOS only)
+   flutter run -d ios
    ```
 
 3. **Debugging**
    ```bash
    # View logs
-   npx react-native log-android  # Android
-   npx react-native log-ios      # iOS
+   flutter logs
+   
+   # Hot reload during development
+   flutter run --hot
    
    # Clear cache if needed
-   npx react-native start --reset-cache
+   flutter clean
+   flutter pub get
    ```
 
 ## Security Considerations
@@ -256,7 +262,7 @@ This is a comprehensive geolocation tracking system built with a Node.js backend
    - SQL injection prevention via Sequelize
 
 3. **Mobile Security**
-   - AsyncStorage for secure token storage
+   - Flutter Secure Storage for secure token storage
    - HTTPS enforcement in production
    - Permission-based location access
 
@@ -301,16 +307,28 @@ This is a comprehensive geolocation tracking system built with a Node.js backend
 
 1. **Android (Play Store)**
    ```bash
-   cd android
-   ./gradlew assembleRelease
-   # Upload APK to Play Store Console
+   cd geo_app
+   
+   # Build APK for testing
+   flutter build apk --release
+   
+   # Build App Bundle for Play Store
+   flutter build appbundle --release
+   
+   # Upload AAB to Play Store Console
    ```
 
 2. **iOS (App Store)**
    ```bash
-   cd ios
-   xcodebuild -workspace GeolocationTracker.xcworkspace -scheme GeolocationTracker archive
-   # Upload to App Store Connect
+   cd geo_app
+   
+   # Build iOS app
+   flutter build ios --release
+   
+   # Open Xcode for signing and upload
+   open ios/Runner.xcworkspace
+   
+   # Archive and upload to App Store Connect
    ```
 
 ## Troubleshooting Guide
@@ -334,11 +352,14 @@ This is a comprehensive geolocation tracking system built with a Node.js backend
 
 ### Common Mobile Issues
 
-1. **Metro Bundler Issues**
+1. **Flutter Build Issues**
    ```bash
    # Clear all caches
-   npx react-native start --reset-cache
-   rm -rf node_modules && npm install
+   flutter clean
+   flutter pub get
+   
+   # Reset pub cache if needed
+   flutter pub cache repair
    ```
 
 2. **Location Permission Denied**
