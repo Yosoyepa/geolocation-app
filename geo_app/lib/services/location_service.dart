@@ -182,7 +182,7 @@ class LocationService {
       
       // Get current user and emit join event
       final user = await _authService.getCurrentUser();
-      if (user != null) {
+      if (user != null && user.id.isNotEmpty) {
         _socket!.emit('join', {'userId': user.id});
         print('Joined user room: ${user.id}');
       }

@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../services/location_service.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
@@ -16,10 +17,10 @@ class MapDashboardScreen extends StatefulWidget {
 class _MapDashboardScreenState extends State<MapDashboardScreen> {
   final LocationService _locationService = LocationService();
   final AuthService _authService = AuthService();
-  GoogleMapController? _mapController;
+  MapController _mapController = MapController();
 
   Position? _currentPosition;
-  final Set<Marker> _markers = {};
+  final List<Marker> _markers = [];
   StreamSubscription<Position>? _positionSubscription;
   bool _isTracking = false;
   bool _permissionsGranted = false;
@@ -55,30 +56,14 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
 
     if (_currentPosition != null) {
       setState(() {
-        _markers.add(
-          Marker(
-            markerId: const MarkerId('current_location'),
-            position: LatLng(
-              _currentPosition!.latitude,
-              _currentPosition!.longitude,
-            ),
-            infoWindow: const InfoWindow(title: 'Current Location'),
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueBlue,
-            ),
-          ),
-        );
+        // Initial marker is handled by the map widget
       });
 
-      // Move camera to current position
-      if (_mapController != null) {
-        _mapController!.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-            15.0,
-          ),
-        );
-      }
+      // Move map to current position
+      _mapController.move(
+        LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+        15.0,
+      );
     }
   }
 
@@ -120,19 +105,6 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
       (Position position) {
         setState(() {
           _currentPosition = position;
-          _markers.removeWhere(
-            (marker) => marker.markerId.value == 'current_location',
-          );
-          _markers.add(
-            Marker(
-              markerId: const MarkerId('current_location'),
-              position: LatLng(position.latitude, position.longitude),
-              infoWindow: const InfoWindow(title: 'Current Location'),
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueGreen,
-              ),
-            ),
-          );
         });
 
         // Send location to server
@@ -142,14 +114,11 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
           accuracy: position.accuracy,
         );
 
-        // Update camera position
-        if (_mapController != null) {
-          _mapController!.animateCamera(
-            CameraUpdate.newLatLng(
-              LatLng(position.latitude, position.longitude),
-            ),
-          );
-        }
+        // Update map position
+        _mapController.move(
+          LatLng(position.latitude, position.longitude),
+          15.0,
+        );
       },
       onError: (error) {
         print('Location stream error: $error');
@@ -201,13 +170,16 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
       if (latitude != null && longitude != null) {
         setState(() {
           // Add or update marker for other user's location
+          _markers.removeWhere((marker) => marker.point == LatLng(latitude, longitude));
           _markers.add(
             Marker(
-              markerId: MarkerId('user_$userId'),
-              position: LatLng(latitude, longitude),
-              infoWindow: InfoWindow(title: 'User $userId'),
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueRed,
+              point: LatLng(latitude, longitude),
+              width: 80,
+              height: 80,
+              child: const Icon(
+                Icons.person_pin_circle,
+                color: Colors.blue,
+                size: 40,
               ),
             ),
           );
@@ -270,22 +242,41 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
                 ],
               ),
             )
-          : GoogleMap(
-              onMapCreated: (GoogleMapController controller) {
-                _mapController = controller;
-              },
-              initialCameraPosition: CameraPosition(
-                target: LatLng(
+          : FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: LatLng(
                   _currentPosition!.latitude,
                   _currentPosition!.longitude,
                 ),
-                zoom: 15.0,
+                initialZoom: 15.0,
+                maxZoom: 18.0,
+                minZoom: 3.0,
               ),
-              markers: _markers,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: true,
-              compassEnabled: true,
-              mapToolbarEnabled: false,
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.example.geo_app',
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: LatLng(
+                        _currentPosition!.latitude,
+                        _currentPosition!.longitude,
+                      ),
+                      width: 80,
+                      height: 80,
+                      child: const Icon(
+                        Icons.location_on,
+                        color: Colors.red,
+                        size: 40,
+                      ),
+                    ),
+                    ..._markers,
+                  ],
+                ),
+              ],
             ),
       floatingActionButton: _permissionsGranted
           ? FloatingActionButton.extended(
