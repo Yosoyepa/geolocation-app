@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'map_dashboard_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -54,7 +55,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (result['error'] != null) {
           _showErrorDialog(result['error']);
         } else if (result['success'] == true && result['data'] != null) {
-          _showSuccessDialog();
+          // Handle success identical to login - navigate to MapDashboardScreen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const MapDashboardScreen()),
+          );
         } else {
           _showErrorDialog(result['message'] ?? 'Registration failed');
         }
@@ -85,24 +90,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Success'),
-        content: const Text('Registration successful! Please login.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
