@@ -39,6 +39,9 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
   }
 
   Future<void> _initializeLocation() async {
+    // Ensure device is registered on first launch after login
+    await _locationService.ensureDeviceRegistration();
+    
     // Check permissions
     _permissionsGranted = await _locationService.checkPermissions();
 
@@ -120,6 +123,7 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
         _locationService.sendLocationToServer(
           position.latitude,
           position.longitude,
+          accuracy: position.accuracy,
         );
 
         // Update camera position
