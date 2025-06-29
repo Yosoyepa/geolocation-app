@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a comprehensive geolocation tracking system built with a Node.js backend, PostgreSQL database, and React Native mobile application. The system provides real-time location tracking, user authentication, device management, and geofencing capabilities.
+This is a comprehensive geolocation tracking system built with a Node.js backend, PostgreSQL database, and **Flutter mobile application**. The system provides real-time location tracking, user authentication, device management, and interactive mapping capabilities with Socket.IO real-time communication.
 
 ## Architecture
 
@@ -18,12 +18,13 @@ This is a comprehensive geolocation tracking system built with a Node.js backend
 - **Locations**: GPS coordinates with timestamps
 - **Geofences**: Geographic boundaries (future implementation)
 
-### Mobile App (React Native)
-- **Cross-platform**: iOS and Android support
-- **Authentication**: Login/registration screens
-- **Real-time Tracking**: GPS location monitoring
-- **Map Visualization**: Interactive maps with markers
-- **Socket Integration**: Live location updates
+### Mobile App (Flutter)
+- **Cross-platform**: iOS and Android support with single codebase
+- **Authentication**: Login/registration screens with form validation
+- **Real-time Tracking**: GPS location monitoring with location permissions
+- **Map Visualization**: Interactive OpenStreetMap with custom markers
+- **Socket Integration**: Real-time location updates via Socket.IO
+- **Modern UI**: Material Design with responsive layouts
 
 ## Quick Start Guide
 
@@ -32,7 +33,8 @@ This is a comprehensive geolocation tracking system built with a Node.js backend
 1. **Node.js 18+** - [Download from nodejs.org](https://nodejs.org/)
 2. **Docker** - [Download Docker Desktop](https://www.docker.com/products/docker-desktop)
 3. **Git** - For version control
-4. **React Native Development Environment**:
+4. **Flutter Development Environment**:
+   - Flutter SDK 3.19+ - [Install Flutter](https://docs.flutter.dev/get-started/install)
    - Android Studio (for Android development)
    - Xcode (for iOS development, macOS only)
 
@@ -68,18 +70,18 @@ This is a comprehensive geolocation tracking system built with a Node.js backend
 
 5. **Setup Mobile App**
    ```bash
-   cd mobile-app
-   npm install --legacy-peer-deps
+   cd geo_app
+   flutter pub get
    
-   # Start Metro bundler
-   npx react-native start
+   # Check connected devices
+   flutter devices
    
-   # In another terminal, run on your device:
-   # For Android:
-   npx react-native run-android
+   # Run on connected device/emulator:
+   flutter run
    
-   # For iOS (macOS only):
-   npx react-native run-ios
+   # For specific platform:
+   flutter run -d android
+   flutter run -d ios  # macOS only
    ```
 
 ### Verification
@@ -405,6 +407,25 @@ This project is developed for educational purposes as part of a university netwo
 
 ---
 
-**Last Updated**: June 8, 2025  
+## 📞 Support & Contact
+
+For questions, support, or collaboration:
+
+**👨‍💻 Developer & Maintainer:**
+- **Juan Carlos Andrade Unigarro**
+- 📧 **Primary Email**: jandradeu@unal.edu.co
+- 📧 **Alternative Email**: andradeunigarrojuancarlos@gmail.com
+- 🏫 **Institution**: Universidad Nacional de Colombia
+- 📚 **Course**: Redes 2025
+
+**📋 Project Resources:**
+- 🐛 **Bug Reports**: Create GitHub Issues
+- 📖 **Documentation**: Check project documentation files
+- 💬 **Questions**: Contact via email above
+
+---
+
+**Last Updated**: June 29, 2025  
 **Version**: 1.0.0  
-**Status**: Phase 4 Complete - Mobile App Implementation Finished
+**Status**: Complete - Flutter Implementation with Comprehensive Documentation  
+**© 2025 Juan Carlos Andrade Unigarro - Universidad Nacional de Colombia**

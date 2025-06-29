@@ -787,9 +787,17 @@ server {
 
 For deployment issues or questions:
 
-- 📧 Email: support@yourcompany.com
-- 📋 Issues: [GitHub Issues](https://github.com/yourusername/geolocation-app/issues)
-- 📖 Documentation: [docs/](./README.md)
+**👨‍💻 Developer & Maintainer:**
+- **Juan Carlos Andrade Unigarro**
+- 📧 **Primary Email**: jandradeu@unal.edu.co
+- 📧 **Alternative Email**: andradeunigarrojuancarlos@gmail.com
+- 🏫 **Institution**: Universidad Nacional de Colombia
+- 📚 **Course**: Redes 2025
+
+**📋 Project Resources:**
+- 🐛 **Bug Reports**: Create GitHub Issues
+- 📖 **Documentation**: Check `/docs` folder
+- 💬 **Questions**: Contact via email above
 
 ---
 

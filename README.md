@@ -344,10 +344,9 @@ flutter build appbundle --release
 |----------|-------------|
 | [🏗️ Architecture](./docs/ARCHITECTURE.md) | System design and component interactions |
 | [📋 API Reference](./docs/API.md) | Complete API endpoints documentation |
-| [🔧 Setup Guide](./docs/SETUP.md) | Detailed installation instructions |
-| [🚀 Deployment](./docs/DEPLOYMENT.md) | Production deployment guide |
-| [🧪 Testing](./docs/TESTING.md) | Testing strategies and examples |
-| [🔐 Security](./docs/SECURITY.md) | Security considerations and best practices |
+| [🛠️ Development Guide](./docs/DEVELOPMENT.md) | Development environment setup and guidelines |
+| [🚀 Deployment Guide](./docs/DEPLOYMENT.md) | Production deployment guide |
+| [📊 Project Summary](./docs/PROJECT_SUMMARY.md) | Complete project overview and status |
 
 ## 🤝 Contributing
 
@@ -377,7 +376,25 @@ cd geo_app && flutter test
 
 ---
 
-**📧 Questions or Issues?** 
-Please open an issue in the repository or contact the development team.
+## 📞 Support & Contact
+
+For questions, support, or collaboration:
+
+**👨‍💻 Developer & Maintainer:**
+- **Juan Carlos Andrade Unigarro**
+- 📧 **Primary Email**: jandradeu@unal.edu.co
+- 📧 **Alternative Email**: andradeunigarrojuancarlos@gmail.com
+- 🏫 **Institution**: Universidad Nacional de Colombia
+- 📚 **Course**: Redes 2025
+
+**📋 Project Resources:**
+- 🐛 **Bug Reports**: Create GitHub Issues
+- 📖 **Documentation**: Check `/docs` folder
+- 💬 **Questions**: Contact via email above
+
+---
+
+**Built with ❤️ for real-time location tracking**  
+**© 2025 Juan Carlos Andrade Unigarro - Universidad Nacional de Colombia**
 
 **🌟 Star this repo** if you find it helpful!

@@ -1,19 +1,27 @@
-# API Documentation - Geolocation Tracking System
+# 📡 API Documentation
 
-## Base URL
+Comprehensive REST API documentation for the Geolocation Tracking App backend.
+
+## 🔗 Base URL
+
 ```
-http://localhost:3001/api
+Development: http://localhost:3000/api
+Production:  https://your-domain.com/api
 ```
 
-## Authentication
+## 🔐 Authentication
 
-The API uses JSON Web Tokens (JWT) for authentication. Include the token in the Authorization header:
+The API uses **JSON Web Tokens (JWT)** for authentication. Include the token in the Authorization header:
 
 ```
 Authorization: Bearer <your-jwt-token>
 ```
 
-## Response Format
+### Token Expiration
+- **Default**: 24 hours
+- **Refresh**: Not implemented (tokens must be renewed via login)
+
+## 📋 Response Format
 
 All API responses follow this standard format:
 
@@ -21,7 +29,7 @@ All API responses follow this standard format:
 ```json
 {
   "success": true,
-  "message": "Success message",
+  "message": "Operation successful",
   "data": {
     // Response data
   }
@@ -32,228 +40,325 @@ All API responses follow this standard format:
 ```json
 {
   "success": false,
-  "message": "Error message",
+  "message": "Error description",
   "errors": [
-    // Validation errors (if applicable)
+    {
+      "field": "fieldName",
+      "message": "Validation error message",
+      "value": "provided_value"
+    }
   ]
 }
 ```
 
-## Authentication Endpoints
+## 🔐 Authentication Endpoints
 
-### Register User
-
-**POST** `/auth/register`
-
-Create a new user account.
+### POST /auth/register
+Register a new user account.
 
 **Request Body:**
 ```json
 {
   "username": "johndoe",
-  "firstName": "John",
-  "lastName": "Doe", 
   "email": "john@example.com",
-  "password": "TestPassword123!"
+  "password": "SecurePass123!",
+  "firstName": "John",
+  "lastName": "Doe"
 }
 ```
 
 **Validation Rules:**
-- `username`: Required, string, 3-30 characters, alphanumeric
-- `firstName`: Required, string, 2-50 characters, letters only
-- `lastName`: Required, string, 2-50 characters, letters only
-- `email`: Required, valid email format, unique
-- `password`: Required, minimum 8 characters with uppercase, lowercase, number, and special character
+- `username`: 3-50 characters, alphanumeric + underscore
+- `email`: Valid email format, unique
+- `password`: Min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+- `firstName/lastName`: 2-50 characters, letters and spaces only
 
-**Success Response (201):**
+**Response (201):**
 ```json
 {
   "success": true,
   "message": "User registered successfully",
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
       "id": 1,
       "username": "johndoe",
+      "email": "john@example.com",
       "firstName": "John",
       "lastName": "Doe",
-      "email": "john@example.com",
       "isActive": true,
-      "createdAt": "2025-06-08T23:15:30.000Z",
-      "updatedAt": "2025-06-08T23:15:30.000Z"
-    }
+      "createdAt": "2024-01-01T12:00:00.000Z"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
-}
-```
-
-**Error Response (400):**
-```json
-{
-  "success": false,
-  "message": "Validation failed",
-  "errors": [
-    "Email already exists"
-  ]
 }
 ```
 
 ---
 
-### Login User
-
-**POST** `/auth/login`
-
-Authenticate user and receive access token.
+### POST /auth/login
+Authenticate user with email and password.
 
 **Request Body:**
 ```json
 {
   "email": "john@example.com",
-  "password": "password123"
+  "password": "SecurePass123!"
 }
 ```
 
-**Validation Rules:**
-- `email`: Required, valid email format
-- `password`: Required
-
-**Success Response (200):**
+**Response (200):**
 ```json
 {
   "success": true,
   "message": "Login successful",
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "user": {
-      "id": "uuid-string",
-      "name": "John Doe",
+      "id": 1,
+      "username": "johndoe",
       "email": "john@example.com",
-      "isActive": true,
-      "lastLoginAt": "2025-06-08T23:20:30.000Z"
-    }
+      "firstName": "John",
+      "lastName": "Doe",
+      "lastLoginAt": "2024-01-01T12:00:00.000Z"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
   }
-}
-```
-
-**Error Response (401):**
-```json
-{
-  "success": false,
-  "message": "Invalid email or password"
 }
 ```
 
 ---
 
-### Get User Profile
-
-**GET** `/auth/profile`
-
-Get current user's profile information.
+### GET /auth/profile
+Get current user profile information.
 
 **Headers:**
 ```
-Authorization: Bearer <jwt-token>
+Authorization: Bearer <token>
 ```
 
-**Success Response (200):**
+**Response (200):**
 ```json
 {
   "success": true,
   "message": "Profile retrieved successfully",
   "data": {
     "user": {
-      "id": "uuid-string",
-      "name": "John Doe",
+      "id": 1,
+      "username": "johndoe",
       "email": "john@example.com",
+      "firstName": "John",
+      "lastName": "Doe",
       "isActive": true,
-      "createdAt": "2025-06-08T23:15:30.000Z",
-      "lastLoginAt": "2025-06-08T23:20:30.000Z"
+      "createdAt": "2024-01-01T12:00:00.000Z",
+      "lastLoginAt": "2024-01-01T12:00:00.000Z"
     }
   }
 }
 ```
 
-**Error Response (401):**
+---
+
+### POST /auth/logout
+Logout user (client-side token removal).
+
+**Response (200):**
 ```json
 {
-  "success": false,
-  "message": "Access token is required"
+  "success": true,
+  "message": "Logout successful"
 }
 ```
 
 ---
 
-## Device Management Endpoints
-
-### Register Device
-
-**POST** `/devices/register`
-
-Register a new tracking device for the authenticated user.
+### PUT /auth/profile
+Update user profile information.
 
 **Headers:**
 ```
-Authorization: Bearer <jwt-token>
+Authorization: Bearer <token>
 ```
 
 **Request Body:**
 ```json
 {
-  "name": "John's iPhone",
-  "platform": "ios",
-  "version": "17.0",
-  "metadata": {
-    "model": "iPhone 14",
-    "userAgent": "Mozilla/5.0..."
+  "firstName": "John Updated",
+  "lastName": "Doe Updated"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "data": {
+    "user": {
+      "id": 1,
+      "email": "john@example.com",
+      "firstName": "John Updated",
+      "lastName": "Doe Updated",
+      "isActive": true,
+      "createdAt": "2024-01-01T12:00:00.000Z",
+      "updatedAt": "2024-01-01T12:30:00.000Z"
+    }
   }
 }
 ```
 
-**Validation Rules:**
-- `name`: Required, string, 2-100 characters
-- `platform`: Required, string
-- `version`: Required, string
-- `metadata`: Optional, object
+---
 
-**Success Response (201):**
+### PUT /auth/change-password
+Change user password.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "currentPassword": "OldPass123!",
+  "newPassword": "NewPass123!",
+  "confirmPassword": "NewPass123!"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Password changed successfully"
+}
+```
+
+---
+
+### POST /auth/verify-token
+Verify JWT token validity.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Token is valid",
+  "data": {
+    "user": {
+      "id": 1,
+      "username": "johndoe",
+      "email": "john@example.com",
+      "firstName": "John",
+      "lastName": "Doe"
+    }
+  }
+}
+```
+
+---
+
+## 📱 Device Management Endpoints
+
+### POST /devices
+Register a new device or update existing device information.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "name": "sdk_gphone64_x86_64",
+  "type": "mobile",
+  "platform": "android",
+  "version": "16",
+  "metadata": {
+    "model": "sdk_gphone64_x86_64",
+    "manufacturer": "Google",
+    "osVersion": "16",
+    "appVersion": "1.0.0"
+  }
+}
+```
+
+**Device Types:**
+- `mobile`
+- `tablet`
+- `gps_tracker`
+- `vehicle`
+- `other`
+
+**Response (201) - New Device:**
 ```json
 {
   "success": true,
   "message": "Device registered successfully",
   "data": {
     "device": {
-      "id": "device-uuid",
-      "name": "John's iPhone",
-      "platform": "ios",
-      "version": "17.0",
+      "id": 5,
+      "userId": 1,
+      "deviceName": "sdk_gphone64_x86_64",
+      "deviceType": "mobile",
+      "platform": "android",
+      "version": "16",
       "isActive": true,
-      "userId": "user-uuid",
-      "createdAt": "2025-06-08T23:25:30.000Z",
-      "lastConnectedAt": "2025-06-08T23:25:30.000Z",
+      "lastConnectedAt": "2024-01-01T12:00:00.000Z",
       "metadata": {
-        "model": "iPhone 14",
-        "userAgent": "Mozilla/5.0..."
-      }
-    }
+        "model": "sdk_gphone64_x86_64",
+        "manufacturer": "Google"
+      },
+      "createdAt": "2024-01-01T12:00:00.000Z",
+      "updatedAt": "2024-01-01T12:00:00.000Z"
+    },
+    "isNew": true
+  }
+}
+```
+
+**Response (200) - Updated Device:**
+```json
+{
+  "success": true,
+  "message": "Device updated successfully",
+  "data": {
+    "device": {
+      "id": 5,
+      "userId": 1,
+      "deviceName": "sdk_gphone64_x86_64",
+      "deviceType": "mobile",
+      "platform": "android",
+      "version": "16",
+      "isActive": true,
+      "lastConnectedAt": "2024-01-01T12:05:00.000Z",
+      "metadata": {
+        "model": "sdk_gphone64_x86_64"
+      },
+      "createdAt": "2024-01-01T12:00:00.000Z",
+      "updatedAt": "2024-01-01T12:05:00.000Z"
+    },
+    "isNew": false
   }
 }
 ```
 
 ---
 
-### Get User Devices
-
-**GET** `/devices`
-
-Get all devices registered by the authenticated user.
+### GET /devices
+Get all devices for the current user.
 
 **Headers:**
 ```
-Authorization: Bearer <jwt-token>
+Authorization: Bearer <token>
 ```
 
-**Success Response (200):**
+**Response (200):**
 ```json
 {
   "success": true,
@@ -261,62 +366,61 @@ Authorization: Bearer <jwt-token>
   "data": {
     "devices": [
       {
-        "id": "device-uuid-1",
-        "name": "John's iPhone",
-        "platform": "ios",
-        "version": "17.0",
-        "isActive": true,
-        "lastConnectedAt": "2025-06-08T23:25:30.000Z",
-        "createdAt": "2025-06-08T23:20:30.000Z"
-      },
-      {
-        "id": "device-uuid-2",
-        "name": "John's Android",
+        "id": 5,
+        "deviceName": "sdk_gphone64_x86_64",
+        "deviceType": "mobile",
         "platform": "android",
-        "version": "14",
-        "isActive": false,
-        "lastConnectedAt": "2025-06-07T15:30:00.000Z",
-        "createdAt": "2025-06-01T10:15:00.000Z"
+        "isActive": true,
+        "lastConnectedAt": "2024-01-01T12:00:00.000Z",
+        "locations": [
+          {
+            "id": 10,
+            "latitude": "37.4219983",
+            "longitude": "-122.084",
+            "timestamp": "2024-01-01T12:00:00.000Z"
+          }
+        ]
       }
-    ]
+    ],
+    "count": 1
   }
 }
 ```
 
 ---
 
-### Update Device
-
-**PUT** `/devices/:deviceId`
-
-Update device information.
+### PUT /devices/:deviceId
+Update a specific device.
 
 **Headers:**
 ```
-Authorization: Bearer <jwt-token>
+Authorization: Bearer <token>
 ```
 
 **Request Body:**
 ```json
 {
-  "name": "John's New iPhone",
-  "isActive": true
+  "name": "Updated Device Name",
+  "isActive": true,
+  "metadata": {
+    "customField": "value"
+  }
 }
 ```
 
-**Success Response (200):**
+**Response (200):**
 ```json
 {
   "success": true,
   "message": "Device updated successfully",
   "data": {
     "device": {
-      "id": "device-uuid",
-      "name": "John's New iPhone",
-      "platform": "ios",
-      "version": "17.0",
+      "id": 5,
+      "deviceName": "Updated Device Name",
+      "deviceType": "mobile",
+      "platform": "android",
       "isActive": true,
-      "lastConnectedAt": "2025-06-08T23:30:30.000Z"
+      "lastConnectedAt": "2024-01-01T12:05:00.000Z"
     }
   }
 }
@@ -324,112 +428,68 @@ Authorization: Bearer <jwt-token>
 
 ---
 
-## Location Tracking Endpoints
+## 📍 Location Tracking Endpoints
 
-### Store Location
-
-**POST** `/locations`
-
-Store a new location update from a device.
+### POST /locations
+Store a new GPS location point.
 
 **Headers:**
 ```
-Authorization: Bearer <jwt-token>
+Authorization: Bearer <token>
+Content-Type: application/json
 ```
 
 **Request Body:**
 ```json
 {
-  "deviceId": "device-uuid",
-  "latitude": 40.7128,
-  "longitude": -74.0060,
+  "deviceId": "5",
+  "latitude": 37.4219983,
+  "longitude": -122.084,
   "accuracy": 5.0,
-  "timestamp": 1704750630000
+  "altitude": 10.0,
+  "heading": 180.0,
+  "speed": 0.0,
+  "timestamp": "2024-01-01T12:00:00.000Z",
+  "metadata": {
+    "source": "gps",
+    "provider": "network"
+  }
 }
 ```
 
 **Validation Rules:**
-- `deviceId`: Required, valid UUID, must belong to authenticated user
-- `latitude`: Required, number, -90 to 90
-- `longitude`: Required, number, -180 to 180
-- `accuracy`: Optional, number, >= 0
-- `timestamp`: Optional, number (Unix timestamp)
+- `latitude`: -90 to 90
+- `longitude`: -180 to 180
+- `accuracy`: >= 0 (meters)
+- `altitude`: Optional (meters)
+- `heading`: 0-360 degrees
+- `speed`: >= 0 (m/s)
+- `deviceId`: Must belong to authenticated user
 
-**Success Response (201):**
+**Response (201):**
 ```json
 {
   "success": true,
   "message": "Location stored successfully",
   "data": {
     "location": {
-      "id": "location-uuid",
-      "deviceId": "device-uuid",
-      "latitude": 40.7128,
-      "longitude": -74.0060,
-      "accuracy": 5.0,
-      "timestamp": "2025-06-08T23:35:30.000Z",
-      "createdAt": "2025-06-08T23:35:30.000Z"
-    },
-    "geofenceEvents": []
-  }
-}
-```
-
----
-
-### Get Location History
-
-**GET** `/locations/history/:deviceId`
-
-Get paginated location history for a specific device.
-
-**Headers:**
-```
-Authorization: Bearer <jwt-token>
-```
-
-**Query Parameters:**
-- `page`: Page number (default: 1)
-- `limit`: Items per page (default: 50, max: 100)
-- `startDate`: Start date filter (ISO string)
-- `endDate`: End date filter (ISO string)
-
-**Example Request:**
-```
-GET /locations/history/device-uuid?page=1&limit=20&startDate=2025-06-01T00:00:00.000Z
-```
-
-**Success Response (200):**
-```json
-{
-  "success": true,
-  "message": "Location history retrieved successfully",
-  "data": {
-    "locations": [
-      {
-        "id": "location-uuid-1",
-        "latitude": 40.7128,
-        "longitude": -74.0060,
-        "accuracy": 5.0,
-        "timestamp": "2025-06-08T23:35:30.000Z",
-        "createdAt": "2025-06-08T23:35:30.000Z"
-      },
-      {
-        "id": "location-uuid-2",
-        "latitude": 40.7130,
-        "longitude": -74.0062,
-        "accuracy": 3.0,
-        "timestamp": "2025-06-08T23:30:30.000Z",
-        "createdAt": "2025-06-08T23:30:30.000Z"
+      "id": 14,
+      "deviceId": 5,
+      "latitude": "37.4219983",
+      "longitude": "-122.084",
+      "accuracy": "5",
+      "altitude": "10",
+      "heading": "180",
+      "speed": "0",
+      "timestamp": "2024-01-01T12:00:00.000Z",
+      "createdAt": "2024-01-01T12:00:00.000Z",
+      "updatedAt": "2024-01-01T12:00:00.000Z",
+      "device": {
+        "id": 5,
+        "deviceName": "sdk_gphone64_x86_64",
+        "deviceType": "mobile",
+        "userId": 1
       }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 20,
-      "total": 150,
-      "totalPages": 8,
-      "hasNext": true,
-      "hasPrev": false
     }
   }
 }
@@ -437,112 +497,160 @@ GET /locations/history/device-uuid?page=1&limit=20&startDate=2025-06-01T00:00:00
 
 ---
 
-### Get Latest Locations
-
-**GET** `/locations/latest`
-
-Get the latest location for each of the user's devices.
+### GET /locations
+Retrieve location history with filtering options.
 
 **Headers:**
 ```
-Authorization: Bearer <jwt-token>
+Authorization: Bearer <token>
 ```
 
-**Success Response (200):**
+**Query Parameters:**
+- `deviceId` (optional): Filter by specific device
+- `startDate` (optional): ISO date string (e.g., 2024-01-01T00:00:00Z)
+- `endDate` (optional): ISO date string
+- `limit` (optional): Number of results (1-1000, default: 100)
+- `offset` (optional): Offset for pagination (default: 0)
+
+**Example:**
+```
+GET /api/locations?deviceId=5&startDate=2024-01-01T00:00:00Z&limit=50
+```
+
+**Response (200):**
 ```json
 {
   "success": true,
-  "message": "Latest locations retrieved successfully",
+  "message": "User locations retrieved successfully",
   "data": {
     "locations": [
       {
-        "deviceId": "device-uuid-1",
-        "deviceName": "John's iPhone",
-        "location": {
-          "id": "location-uuid-1",
-          "latitude": 40.7128,
-          "longitude": -74.0060,
-          "accuracy": 5.0,
-          "timestamp": "2025-06-08T23:35:30.000Z",
-          "createdAt": "2025-06-08T23:35:30.000Z"
-        }
-      },
-      {
-        "deviceId": "device-uuid-2",
-        "deviceName": "John's Android",
-        "location": {
-          "id": "location-uuid-2",
-          "latitude": 40.7130,
-          "longitude": -74.0062,
-          "accuracy": 8.0,
-          "timestamp": "2025-06-08T22:30:30.000Z",
-          "createdAt": "2025-06-08T22:30:30.000Z"
+        "id": 14,
+        "deviceId": 5,
+        "latitude": "37.4219983",
+        "longitude": "-122.084",
+        "accuracy": "5",
+        "timestamp": "2024-01-01T12:00:00.000Z",
+        "device": {
+          "id": 5,
+          "deviceName": "sdk_gphone64_x86_64",
+          "deviceType": "mobile"
         }
       }
-    ]
+    ],
+    "count": 1,
+    "filters": {
+      "deviceId": "5",
+      "startDate": "2024-01-01T00:00:00Z",
+      "limit": "50"
+    }
   }
 }
 ```
 
 ---
 
-## Geofence Endpoints (Future Implementation)
-
-### Create Geofence
-
-**POST** `/geofences`
-
-Create a new geofence boundary.
+### GET /devices/:deviceId/locations
+Get locations for a specific device.
 
 **Headers:**
 ```
-Authorization: Bearer <jwt-token>
+Authorization: Bearer <token>
 ```
 
-**Request Body:**
+**Query Parameters:** Same as `/locations`
+
+**Response (200):**
 ```json
 {
-  "name": "Home",
-  "description": "Home geofence area",
-  "latitude": 40.7128,
-  "longitude": -74.0060,
-  "radius": 100,
-  "isActive": true
+  "success": true,
+  "message": "Device locations retrieved successfully",
+  "data": {
+    "locations": [
+      {
+        "id": 14,
+        "deviceId": 5,
+        "latitude": "37.4219983",
+        "longitude": "-122.084",
+        "accuracy": "5",
+        "timestamp": "2024-01-01T12:00:00.000Z"
+      }
+    ],
+    "count": 1,
+    "deviceId": 5,
+    "filters": {}
+  }
 }
 ```
 
 ---
 
-### Get User Geofences
+### GET /locations/latest
+Get latest location for each device.
 
-**GET** `/geofences`
+**Headers:**
+```
+Authorization: Bearer <token>
+```
 
-Get all geofences created by the authenticated user.
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Latest locations retrieved successfully",
+  "data": {
+    "devices": [
+      {
+        "id": 5,
+        "deviceName": "sdk_gphone64_x86_64",
+        "deviceType": "mobile",
+        "lastLocation": {
+          "id": 14,
+          "latitude": "37.4219983",
+          "longitude": "-122.084",
+          "accuracy": "5",
+          "timestamp": "2024-01-01T12:00:00.000Z"
+        }
+      }
+    ],
+    "count": 1
+  }
+}
+```
 
 ---
 
-### Update Geofence
+## 🎯 Geofence Endpoints (Planned - Not Yet Implemented)
 
-**PUT** `/geofences/:geofenceId`
+### POST /geofences
+Create a new geofence.
 
-Update an existing geofence.
+**Response (501):**
+```json
+{
+  "success": false,
+  "message": "Geofence functionality will be implemented in the next phase",
+  "data": null
+}
+```
+
+### GET /geofences
+Get user geofences.
+
+**Response (501):**
+```json
+{
+  "success": false,
+  "message": "Geofence functionality will be implemented in the next phase",
+  "data": null
+}
+```
 
 ---
 
-### Delete Geofence
-
-**DELETE** `/geofences/:geofenceId`
-
-Delete a geofence.
-
----
-
-## Real-time Communication (Socket.IO)
+## 🔌 Socket.IO Real-time Events
 
 ### Connection
-
-Connect to the Socket.IO server with JWT authentication:
-
 ```javascript
 const socket = io('http://localhost:3000', {
   auth: {
@@ -551,178 +659,301 @@ const socket = io('http://localhost:3000', {
 });
 ```
 
-### Events
+### Client to Server Events
 
-#### Client → Server
+#### join
+Join user-specific room for real-time updates.
+```javascript
+socket.emit('join', { userId: 1 });
+```
 
-**location-update**
-Send real-time location updates:
-
+#### location-update
+Send real-time location update.
 ```javascript
 socket.emit('location-update', {
-  deviceId: 'device-uuid',
-  latitude: 40.7128,
-  longitude: -74.0060,
+  latitude: 37.4219983,
+  longitude: -122.084,
   accuracy: 5.0,
-  timestamp: Date.now()
+  timestamp: new Date().toISOString()
 });
 ```
 
-#### Server → Client
-
-**location-update**
-Receive real-time location updates from other devices:
-
+#### ping
+Health check.
 ```javascript
-socket.on('location-update', (data) => {
-  console.log('New location:', data);
-  // data contains: deviceId, latitude, longitude, accuracy, timestamp
-});
+socket.emit('ping');
 ```
 
-**geofence-event**
-Receive geofence entry/exit notifications:
+### Server to Client Events
 
+#### connected
+Connection confirmation.
 ```javascript
-socket.on('geofence-event', (data) => {
-  console.log('Geofence event:', data);
-  // data contains: deviceId, geofenceId, eventType, timestamp
+socket.on('connected', (data) => {
+  console.log('Connected:', data.message);
+  // Output: "Connected to geolocation tracking server"
 });
 ```
 
----
-
-## Error Codes
-
-| HTTP Status | Error Code | Description |
-|-------------|------------|-------------|
-| 400 | VALIDATION_ERROR | Request validation failed |
-| 401 | UNAUTHORIZED | Authentication required or invalid |
-| 403 | FORBIDDEN | Access denied |
-| 404 | NOT_FOUND | Resource not found |
-| 409 | CONFLICT | Resource already exists |
-| 422 | UNPROCESSABLE_ENTITY | Invalid request data |
-| 429 | TOO_MANY_REQUESTS | Rate limit exceeded |
-| 500 | INTERNAL_ERROR | Server error |
-
----
-
-## Rate Limiting
-
-- **General API**: 100 requests per 15 minutes per IP
-- **Authentication**: 5 attempts per 15 minutes per IP
-- **Location updates**: 1000 requests per hour per user
-
-Rate limit headers are included in responses:
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 87
-X-RateLimit-Reset: 1704750900
-```
-
----
-
-## Testing with cURL
-
-### Register a new user:
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Test User",
-    "email": "test@example.com",
-    "password": "password123"
-  }'
-```
-
-### Login:
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "password": "password123"
-  }'
-```
-
-### Register a device:
-```bash
-curl -X POST http://localhost:3000/api/devices/register \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "name": "Test Device",
-    "platform": "web",
-    "version": "1.0"
-  }'
-```
-
-### Send location:
-```bash
-curl -X POST http://localhost:3000/api/locations \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "deviceId": "YOUR_DEVICE_ID",
-    "latitude": 40.7128,
-    "longitude": -74.0060,
-    "accuracy": 5.0
-  }'
-```
-
----
-
-## API Client SDKs
-
-### JavaScript/TypeScript Example
-
-```typescript
-class GeolocationAPI {
-  private baseURL = 'http://localhost:3000/api';
-  private token: string | null = null;
-
-  setToken(token: string) {
-    this.token = token;
+#### new-location
+Real-time location updates from devices.
+```javascript
+socket.on('new-location', (data) => {
+  console.log('Location update:', data);
+  /*
+  {
+    location: {
+      id: 14,
+      deviceId: 5,
+      latitude: 37.4219983,
+      longitude: -122.084,
+      timestamp: "2024-01-01T12:00:00.000Z",
+      device: { id: 5, deviceName: "Phone", userId: 1 }
+    },
+    userId: 1,
+    deviceId: 5,
+    timestamp: "2024-01-01T12:00:00.000Z"
   }
+  */
+});
+```
 
-  async request(endpoint: string, options: RequestInit = {}) {
-    const url = `${this.baseURL}${endpoint}`;
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(this.token && { Authorization: `Bearer ${this.token}` }),
-      ...options.headers,
-    };
+#### pong
+Health check response.
+```javascript
+socket.on('pong', (data) => {
+  console.log('Pong received:', data.timestamp);
+});
+```
 
-    const response = await fetch(url, { ...options, headers });
-    const data = await response.json();
+#### error
+Socket error handling.
+```javascript
+socket.on('error', (error) => {
+  console.error('Socket error:', error);
+});
+```
 
-    if (!response.ok) {
-      throw new Error(data.message || 'API request failed');
+---
+
+## 🚨 Error Responses
+
+### Validation Error (400)
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Please provide a valid email address",
+      "value": "invalid-email"
+    },
+    {
+      "field": "password",
+      "message": "Password must be at least 8 characters long",
+      "value": ""
     }
+  ]
+}
+```
 
-    return data;
-  }
+### Authentication Error (401)
+```json
+{
+  "success": false,
+  "message": "Authentication token missing",
+  "status": 401
+}
+```
 
-  async login(email: string, password: string) {
-    const data = await this.request('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-    this.setToken(data.data.token);
-    return data;
-  }
+### Authorization Error (403)
+```json
+{
+  "success": false,
+  "message": "Access denied",
+  "status": 403
+}
+```
 
-  async sendLocation(deviceId: string, latitude: number, longitude: number) {
-    return this.request('/locations', {
-      method: 'POST',
-      body: JSON.stringify({ deviceId, latitude, longitude }),
-    });
-  }
+### Not Found Error (404)
+```json
+{
+  "success": false,
+  "message": "Resource not found",
+  "status": 404
+}
+```
+
+### Server Error (500)
+```json
+{
+  "success": false,
+  "message": "Internal server error",
+  "status": 500
 }
 ```
 
 ---
 
-**Last Updated**: June 8, 2025  
+## 📊 HTTP Status Codes
+
+| Code | Description | Usage |
+|------|-------------|-------|
+| `200` | OK | Successful GET, PUT, DELETE |
+| `201` | Created | Successful POST (resource created) |
+| `400` | Bad Request | Invalid request data |
+| `401` | Unauthorized | Missing or invalid authentication |
+| `403` | Forbidden | Valid auth but insufficient permissions |
+| `404` | Not Found | Resource doesn't exist |
+| `422` | Unprocessable Entity | Validation failed |
+| `429` | Too Many Requests | Rate limit exceeded |
+| `500` | Internal Server Error | Server-side error |
+| `501` | Not Implemented | Feature not yet implemented |
+
+---
+
+## ⚡ Rate Limiting
+
+API endpoints have different rate limits:
+
+| Endpoint Group | Limit | Window |
+|----------------|-------|--------|
+| `/auth/login`, `/auth/register` | 5 requests | 1 minute |
+| `/auth/change-password` | 3 requests | 1 minute |
+| General API endpoints | 100 requests | 1 minute |
+| `/locations` POST | 60 requests | 1 minute |
+
+**Rate Limit Headers:**
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1640995200
+```
+
+---
+
+## 🧪 Testing Examples
+
+### Using cURL
+
+**Register User:**
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "TestPass123!",
+    "firstName": "Test",
+    "lastName": "User"
+  }'
+```
+
+**Login User:**
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "TestPass123!"
+  }'
+```
+
+**Register Device:**
+```bash
+curl -X POST http://localhost:3000/api/devices \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "name": "Test Device",
+    "type": "mobile",
+    "platform": "android",
+    "version": "14"
+  }'
+```
+
+**Send Location:**
+```bash
+curl -X POST http://localhost:3000/api/locations \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "deviceId": "5",
+    "latitude": 37.4219983,
+    "longitude": -122.084,
+    "accuracy": 5.0,
+    "timestamp": "2024-01-01T12:00:00.000Z"
+  }'
+```
+
+### Using JavaScript (Fetch)
+
+```javascript
+// Login
+const loginResponse = await fetch('http://localhost:3000/api/auth/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'test@example.com',
+    password: 'TestPass123!'
+  })
+});
+
+const loginData = await loginResponse.json();
+const token = loginData.data.token;
+
+// Send Location
+const locationResponse = await fetch('http://localhost:3000/api/locations', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({
+    deviceId: '5',
+    latitude: 37.4219983,
+    longitude: -122.084,
+    accuracy: 5.0,
+    timestamp: new Date().toISOString()
+  })
+});
+```
+
+---
+
+## 🔐 Security Considerations
+
+1. **Always use HTTPS** in production
+2. **Store JWT tokens securely** (not in localStorage for web)
+3. **Validate all input data** on both client and server
+4. **Implement proper CORS** for web applications
+5. **Rate limiting** prevents abuse
+6. **Input sanitization** prevents injection attacks
+7. **Regular security audits** of dependencies
+
+---
+
+## 📞 Support & Contact
+
+For questions, support, or collaboration:
+
+**👨‍💻 Developer & Maintainer:**
+- **Juan Carlos Andrade Unigarro**
+- 📧 **Primary Email**: jandradeu@unal.edu.co
+- 📧 **Alternative Email**: andradeunigarrojuancarlos@gmail.com
+- 🏫 **Institution**: Universidad Nacional de Colombia
+- 📚 **Course**: Redes 2025
+
+**📋 Project Resources:**
+- 🐛 **Bug Reports**: Create GitHub Issues
+- 📖 **Documentation**: Check `/docs` folder
+- 💬 **Questions**: Contact via email above
+
+---
+
+**Last Updated**: June 29, 2025  
 **API Version**: 1.0.0  
-**Contact**: Development Team
+**© 2025 Juan Carlos Andrade Unigarro - Universidad Nacional de Colombia**

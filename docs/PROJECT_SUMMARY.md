@@ -366,10 +366,17 @@ The documentation provides:
 
 For questions about this documentation or the project:
 
-- **📧 Email:** development-team@company.com
-- **🐛 Issues:** [GitHub Issues](https://github.com/username/geolocation-app/issues)
-- **📖 Documentation:** [Project Wiki](https://github.com/username/geolocation-app/wiki)
-- **💬 Discussions:** [GitHub Discussions](https://github.com/username/geolocation-app/discussions)
+**👨‍💻 Developer & Maintainer:**
+- **Juan Carlos Andrade Unigarro**
+- 📧 **Primary Email**: jandradeu@unal.edu.co
+- 📧 **Alternative Email**: andradeunigarrojuancarlos@gmail.com
+- 🏫 **Institution**: Universidad Nacional de Colombia
+- 📚 **Course**: Redes 2025
+
+**📋 Project Resources:**
+- 🐛 **Bug Reports**: Create GitHub Issues
+- 📖 **Documentation**: Check `/docs` folder
+- 💬 **Questions**: Contact via email above
 
 ---
 
