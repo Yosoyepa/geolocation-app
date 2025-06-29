@@ -53,7 +53,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
 
         if (result['error'] != null) {
-          _showErrorDialog(result['error']);
+          // Handle detailed validation errors
+          String errorMessage = result['error'];
+          if (result['errors'] != null && result['errors'] is List) {
+            List<String> errorDetails = [];
+            for (var error in result['errors']) {
+              if (error is Map && error['message'] != null) {
+                errorDetails.add('${error['field']}: ${error['message']}');
+              }
+            }
+            if (errorDetails.isNotEmpty) {
+              errorMessage = errorDetails.join('\n');
+            }
+          }
+          _showErrorDialog(errorMessage);
         } else if (result['success'] == true && result['data'] != null) {
           // Handle success identical to login - navigate to MapDashboardScreen
           Navigator.pushReplacement(
@@ -61,7 +74,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
             MaterialPageRoute(builder: (context) => const MapDashboardScreen()),
           );
         } else {
-          _showErrorDialog(result['message'] ?? 'Registration failed');
+          String errorMessage = result['message'] ?? 'Registration failed';
+          if (result['errors'] != null && result['errors'] is List) {
+            List<String> errorDetails = [];
+            for (var error in result['errors']) {
+              if (error is Map && error['message'] != null) {
+                errorDetails.add('${error['field']}: ${error['message']}');
+              }
+            }
+            if (errorDetails.isNotEmpty) {
+              errorMessage = errorDetails.join('\n');
+            }
+          }
+          _showErrorDialog(errorMessage);
         }
       }
     } catch (e) {
@@ -193,14 +218,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   labelText: 'Password',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock),
+                  helperText: 'Must contain: 8+ chars, 1 uppercase, 1 lowercase, 1 number, 1 special char (@\$!%*?&) ',
+                  helperMaxLines: 2,
                 ),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';
                   }
-                  if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
+                  if (value.length < 8) {
+                    return 'Password must be at least 8 characters';
+                  }
+                  if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$').hasMatch(value)) {
+                    return 'Password must contain at least one uppercase, lowercase, number, and special character (@\$!%*?&)';
                   }
                   return null;
                 },

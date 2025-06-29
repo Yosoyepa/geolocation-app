@@ -24,6 +24,7 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
   StreamSubscription<Position>? _positionSubscription;
   bool _isTracking = false;
   bool _permissionsGranted = false;
+  bool _socketInitialized = false;
 
   @override
   void initState() {
@@ -40,55 +41,88 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
   }
 
   Future<void> _initializeLocation() async {
-    // Ensure device is registered on first launch after login
-    await _locationService.ensureDeviceRegistration();
-    
-    // Check permissions
-    _permissionsGranted = await _locationService.checkPermissions();
+    try {
+      // Check if user is logged in
+      final isLoggedIn = await _authService.isLoggedIn();
+      if (!isLoggedIn) {
+        print('User not logged in, redirecting to login');
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        }
+        return;
+      }
 
-    if (!_permissionsGranted) {
-      _showPermissionDialog();
-      return;
-    }
+      // Ensure device is registered on first launch after login
+      await _locationService.ensureDeviceRegistration();
+      
+      // Check permissions
+      _permissionsGranted = await _locationService.checkPermissions();
 
-    // Get current position
-    _currentPosition = await _locationService.getCurrentPosition();
+      if (!_permissionsGranted) {
+        _showPermissionDialog();
+        return;
+      }
 
-    if (_currentPosition != null) {
-      setState(() {
-        // Initial marker is handled by the map widget
-      });
+      // Get current position
+      _currentPosition = await _locationService.getCurrentPosition();
 
-      // Move map to current position
-      _mapController.move(
-        LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-        15.0,
-      );
+      if (_currentPosition != null) {
+        setState(() {
+          // Initial marker is handled by the map widget
+        });
+        
+        // Don't move map here - it will be positioned by MapOptions.initialCenter
+      }
+    } catch (e) {
+      print('Error initializing location: $e');
+      // Show error message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error initializing location: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _initializeSocket() async {
-    await _locationService.initializeSocket();
+    if (_socketInitialized) {
+      print('Socket already initialized, skipping...');
+      return;
+    }
     
-    // Listen to location updates from other devices/users
-    await _locationService.listenToLocationUpdates((locationData) {
-      // Handle real-time location updates from other devices/users
-      print('Received location update: $locationData');
-    });
-    
-    // Listen for location-update events
-    _locationService.onLocationUpdate((data) {
-      print('Location update event: $data');
-      // Handle location update event - could update markers on map
-      _handleLocationUpdate(data);
-    });
-    
-    // Listen for geofence events
-    _locationService.onGeofenceEvent((data) {
-      print('Geofence event: $data');
-      // Handle geofence event - could show notifications
-      _handleGeofenceEvent(data);
-    });
+    try {
+      await _locationService.initializeSocket();
+      _socketInitialized = true;
+      
+      // Listen to location updates from other devices/users
+      await _locationService.listenToLocationUpdates((locationData) {
+        // Handle real-time location updates from other devices/users
+        print('Received location update: $locationData');
+      });
+      
+      // Listen for location-update events
+      _locationService.onLocationUpdate((data) {
+        print('Location update event: $data');
+        // Handle location update event - could update markers on map
+        _handleLocationUpdate(data);
+      });
+      
+      // Listen for geofence events
+      _locationService.onGeofenceEvent((data) {
+        print('Geofence event: $data');
+        // Handle geofence event - could show notifications
+        _handleGeofenceEvent(data);
+      });
+    } catch (e) {
+      print('Error initializing socket: $e');
+      _socketInitialized = false;
+    }
   }
 
   void _startTracking() {
@@ -97,33 +131,62 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
       return;
     }
 
+    if (_isTracking) {
+      print('Tracking is already active');
+      return;
+    }
+
     setState(() {
       _isTracking = true;
     });
 
+    print('Starting location tracking...');
+
+    _positionSubscription?.cancel(); // Cancel any existing subscription
     _positionSubscription = _locationService.getPositionStream().listen(
       (Position position) {
+        if (!mounted) return; // Don't update if widget is disposed
+        
         setState(() {
           _currentPosition = position;
         });
 
         // Send location to server
+        print('Sending location: ${position.latitude}, ${position.longitude}');
         _locationService.sendLocationToServer(
           position.latitude,
           position.longitude,
           accuracy: position.accuracy,
-        );
+        ).then((success) {
+          print('Location sent successfully: $success');
+        }).catchError((error) {
+          print('Error sending location: $error');
+        });
 
-        // Update map position
-        _mapController.move(
-          LatLng(position.latitude, position.longitude),
-          15.0,
-        );
+        // Update map position (with safety check)
+        try {
+          _mapController.move(
+            LatLng(position.latitude, position.longitude),
+            15.0,
+          );
+        } catch (e) {
+          // MapController not ready yet, ignore
+          print('MapController not ready: $e');
+        }
       },
       onError: (error) {
         print('Location stream error: $error');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Location tracking error: $error'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
         _stopTracking();
       },
+      cancelOnError: false, // Don't cancel on error, just log it
     );
   }
 
@@ -212,7 +275,15 @@ class _MapDashboardScreenState extends State<MapDashboardScreen> {
   }
 
   Future<void> _logout() async {
+    // Disconnect socket first
+    _locationService.disconnect();
+    
+    // Stop tracking
+    _stopTracking();
+    
+    // Clear auth data
     await _authService.logout();
+    
     if (mounted) {
       Navigator.pushReplacement(
         context,

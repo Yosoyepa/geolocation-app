@@ -27,7 +27,20 @@ class AuthService {
         }),
       );
 
-      return jsonDecode(response.body);
+      final responseData = jsonDecode(response.body);
+
+      // Save token and user data if registration is successful
+      if (response.statusCode == 201 && responseData['success'] == true && responseData['data'] != null) {
+        final data = responseData['data'];
+        if (data['token'] != null && data['user'] != null) {
+          await _saveToken(data['token']);
+          await _saveUser(User.fromJson(data['user']));
+          // Clear any existing device ID to force new device creation
+          await _clearDeviceId();
+        }
+      }
+
+      return responseData;
     } catch (e) {
       return {'error': 'Network error: $e'};
     }
@@ -48,6 +61,8 @@ class AuthService {
         if (data['token'] != null && data['user'] != null) {
           await _saveToken(data['token']);
           await _saveUser(User.fromJson(data['user']));
+          // Clear any existing device ID to ensure correct device association
+          await _clearDeviceId();
         }
       }
 
@@ -83,8 +98,13 @@ class AuthService {
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_data');
+    await prefs.clear(); // Clear all stored data
+    print('All user data cleared on logout');
+  }
+
+  Future<void> _clearDeviceId() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('device_id');
   }
 
   Future<bool> isLoggedIn() async {

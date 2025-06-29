@@ -14,10 +14,31 @@ class LocationService {
   final AuthService _authService = AuthService();
   IO.Socket? _socket;
   static const String _deviceIdKey = 'device_id';
+  bool _isRegistering = false;
+  bool _isInitializingSocket = false;
+  static LocationService? _instance;
+  
+  // Singleton pattern to prevent multiple instances
+  factory LocationService() {
+    _instance ??= LocationService._internal();
+    return _instance!;
+  }
+  
+  LocationService._internal();
 
   /// Ensures device is registered on first launch after login
   Future<void> ensureDeviceRegistration() async {
-    await getOrCreateDeviceId();
+    if (_isRegistering) {
+      print('Device registration already in progress, skipping...');
+      return;
+    }
+    
+    _isRegistering = true;
+    try {
+      await getOrCreateDeviceId();
+    } finally {
+      _isRegistering = false;
+    }
   }
 
   Future<String?> getOrCreateDeviceId() async {
@@ -51,7 +72,7 @@ class LocationService {
     }
 
     final metadata = <String, String>{
-      'platform': platform,
+      'platform': platform.toLowerCase(),
       'model': name,
       'version': version
     };
@@ -59,27 +80,71 @@ class LocationService {
     final token = await _authService.getToken();
     if (token == null) return null;
 
+    print('Registering device with backend...');
+    final requestBody = {
+      'name': name,
+      'type': 'mobile',  // Add required type field
+      'platform': platform.toLowerCase(),  // Use lowercase platform
+      'version': version,
+      'metadata': metadata,
+    };
+    print('Device registration request: ${jsonEncode(requestBody)}');
+    
     final response = await http.post(
-      Uri.parse('$baseUrl/devices/register'),
+      Uri.parse('$baseUrl/devices'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({
-        'name': name,
-        'platform': platform,
-        'version': version,
-        'metadata': metadata,
-      }),
+      body: jsonEncode(requestBody),
     );
 
+    print('Device registration response status: ${response.statusCode}');
+    print('Device registration response body: ${response.body}');
+    
     if (response.statusCode == 200 || response.statusCode == 201) {
       final responseData = jsonDecode(response.body);
-      deviceId = responseData['device']['id']?.toString();
+      print('Parsed response data: $responseData');
+      
+      // Try multiple possible paths for device ID
+// Try multiple possible paths for device ID with better null checking
+if (responseData.containsKey('data') && 
+    responseData['data'] != null &&
+    responseData['data'] is Map &&
+    responseData['data'].containsKey('device') &&
+    responseData['data']['device'] != null &&
+    responseData['data']['device'] is Map &&
+    responseData['data']['device'].containsKey('id')) {
+  deviceId = responseData['data']['device']['id']?.toString();
+} else if (responseData.containsKey('device') &&
+           responseData['device'] != null &&
+           responseData['device'] is Map &&
+           responseData['device'].containsKey('id')) {
+  deviceId = responseData['device']['id']?.toString();
+} else if (responseData.containsKey('deviceId')) {
+  deviceId = responseData['deviceId']?.toString();
+} else if (responseData.containsKey('id')) {
+  deviceId = responseData['id']?.toString();
+}
+
+if (deviceId == null) {
+  print('ERROR: Could not extract device ID from response');
+  print('Response structure: ${responseData.keys.toList()}');
+  // Return null to indicate failure
+  return null;
+}
+      
+      print('Extracted device ID: $deviceId');
+      
       if (deviceId != null) {
         await prefs.setString(_deviceIdKey, deviceId);
+        print('Device ID saved to preferences: $deviceId');
         return deviceId;
+      } else {
+        print('ERROR: Could not extract device ID from response');
       }
+    } else {
+      print('ERROR: Device registration failed with status ${response.statusCode}');
     }
 
     return null;
@@ -131,27 +196,43 @@ class LocationService {
 
   Future<bool> sendLocationToServer(double latitude, double longitude, {double? accuracy}) async {
     try {
+      print('=== sendLocationToServer called ===');
       final token = await _authService.getToken();
-      if (token == null) return false;
+      if (token == null) {
+        print('No token available');
+        return false;
+      }
+      print('Token available: ${token.substring(0, 20)}...');
 
       final deviceId = await getOrCreateDeviceId();
-      if (deviceId == null) return false;
+      if (deviceId == null) {
+        print('No device ID available');
+        return false;
+      }
+      print('Device ID: $deviceId');
 
+      final requestBody = {
+        'deviceId': deviceId,
+        'latitude': latitude,
+        'longitude': longitude,
+        'accuracy': accuracy ?? 0.0,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+      print('Sending location request to: $baseUrl/locations');
+      print('Request body: ${jsonEncode(requestBody)}');
+      
       final response = await http.post(
         Uri.parse('$baseUrl/locations'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({
-          'deviceId': deviceId,
-          'latitude': latitude,
-          'longitude': longitude,
-          'accuracy': accuracy ?? 0.0,
-          'timestamp': DateTime.now().toIso8601String(),
-        }),
+        body: jsonEncode(requestBody),
       );
 
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       print('Error sending location to server: $e');
@@ -160,52 +241,79 @@ class LocationService {
   }
 
   Future<void> initializeSocket() async {
-    if (_socket != null) return;
-
-    // Get token and deviceId before connecting
-    final token = await _authService.getToken();
-    final deviceId = await getOrCreateDeviceId();
-    
-    if (token == null) {
-      print('No token available, cannot initialize socket');
+    if (_isInitializingSocket) {
+      print('Socket initialization already in progress, skipping...');
       return;
     }
 
-    _socket = IO.io(socketUrl, <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': false,
-      'auth': {'token': token},
-    });
-
-    _socket!.on('connect', (_) async {
-      print('Connected to Socket.IO server');
-      
-      // Get current user and emit join event
-      final user = await _authService.getCurrentUser();
-      if (user != null && user.id.isNotEmpty) {
-        _socket!.emit('join', {'userId': user.id});
-        print('Joined user room: ${user.id}');
+    _isInitializingSocket = true;
+    try {
+      // Always disconnect existing socket first
+      if (_socket != null) {
+        print('Disconnecting existing socket...');
+        _socket!.disconnect();
+        _socket = null;
       }
-    });
 
-    _socket!.on('disconnect', (_) {
-      print('Disconnected from Socket.IO server');
-    });
+      // Get fresh token and deviceId before connecting
+      final token = await _authService.getToken();
+      final user = await _authService.getCurrentUser();
+      
+      if (token == null) {
+        print('No token available, cannot initialize socket');
+        return;
+      }
+      
+      if (user == null) {
+        print('No user available, cannot initialize socket');
+        return;
+      }
 
-    // Listen for location updates
-    _socket!.on('location-update', (data) {
-      print('Received location update: $data');
-      // Handle location update
-    });
+      print('Initializing socket with fresh token for user: ${user.id}');
+      
+      _socket = IO.io(socketUrl, <String, dynamic>{
+        'transports': ['websocket'],
+        'autoConnect': false,
+        'forceNew': true, // Force new connection
+        'auth': {'token': token},
+      });
 
-    // Listen for geofence events
-    _socket!.on('geofence-event', (data) {
-      print('Received geofence event: $data');
-      // Handle geofence event
-    });
+      _socket!.on('connect', (_) async {
+        print('Connected to Socket.IO server');
+        
+        // Get current user and emit join event with fresh user data
+        final currentUser = await _authService.getCurrentUser();
+        if (currentUser != null && currentUser.id != null && currentUser.id.isNotEmpty) {
+          _socket?.emit('join', {'userId': currentUser.id});
+          print('Joined user room: ${currentUser.id}');
+        } else {
+          print('No user available for socket join');
+        }
+      });
 
-    // Connect after configuration
-    _socket!.connect();
+      _socket!.on('disconnect', (_) {
+        print('Disconnected from Socket.IO server');
+      });
+
+      // Listen for location updates
+      _socket!.on('location-update', (data) {
+        print('Received location update: $data');
+        // Handle location update
+      });
+
+      // Listen for geofence events
+      _socket!.on('geofence-event', (data) {
+        print('Received geofence event: $data');
+        // Handle geofence event
+      });
+
+      // Connect after configuration
+      _socket!.connect();
+    } catch (e) {
+      print('Error initializing socket: $e');
+    } finally {
+      _isInitializingSocket = false;
+    }
   }
 
   Future<void> listenToLocationUpdates(
