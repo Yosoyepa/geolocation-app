@@ -44,11 +44,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (result['error'] != null) {
           _showErrorDialog(result['error']);
-        } else if (result['token'] != null) {
+        } else if (result['success'] == true && result['data'] != null) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const MapDashboardScreen()),
           );
+        } else {
+          _showErrorDialog(result['message'] ?? 'Login failed');
         }
       }
     } catch (e) {

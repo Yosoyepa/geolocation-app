@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
-import 'map_dashboard_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,7 +10,9 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -20,7 +21,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _usernameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -36,9 +39,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final result = await _authService.register(
+        _usernameController.text.trim(),
+        _firstNameController.text.trim(),
+        _lastNameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text,
-        _nameController.text.trim(),
       );
 
       if (mounted) {
@@ -48,13 +53,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         if (result['error'] != null) {
           _showErrorDialog(result['error']);
-        } else if (result['token'] != null) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const MapDashboardScreen()),
-          );
-        } else {
+        } else if (result['success'] == true && result['data'] != null) {
           _showSuccessDialog();
+        } else {
+          _showErrorDialog(result['message'] ?? 'Registration failed');
         }
       }
     } catch (e) {
@@ -124,18 +126,54 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 32),
               TextFormField(
-                controller: _nameController,
+                controller: _usernameController,
                 decoration: const InputDecoration(
-                  labelText: 'Full Name',
+                  labelText: 'Username',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.account_circle),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a username';
+                  }
+                  if (value.length < 3) {
+                    return 'Username must be at least 3 characters';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _firstNameController,
+                decoration: const InputDecoration(
+                  labelText: 'First Name',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
+                    return 'Please enter your first name';
                   }
                   if (value.length < 2) {
-                    return 'Name must be at least 2 characters';
+                    return 'First name must be at least 2 characters';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _lastNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Last Name',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your last name';
+                  }
+                  if (value.length < 2) {
+                    return 'Last name must be at least 2 characters';
                   }
                   return null;
                 },
